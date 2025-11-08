@@ -4,12 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PCTVS Login</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
-  <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon.png') }}">
-  <link rel="apple-touch-icon" href="{{ asset('images/favicon.png') }}">
-  
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -111,20 +105,6 @@
       20%, 60% { transform: translateX(-5px); }
       40%, 80% { transform: translateX(5px); }
     }
-
-    /* Image fallback styles */
-    .logo-fallback {
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 12px;
-    }
   </style>
 </head>
 
@@ -161,13 +141,7 @@
       <!-- Logo & Content -->
       <div class="relative z-10 flex flex-col items-center text-center animate-fadeIn">
         <div class="w-32 h-32 rounded-2xl bg-white flex items-center justify-center shadow-2xl mb-8 relative animate-pulse-soft">
-          <img 
-            src="{{ asset('/images/logo.png') }}" 
-            alt="PCTVS Logo" 
-            class="w-24 h-24 object-contain"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-          />
-          <div class="logo-fallback" style="width: 80px; height: 80px; font-size: 24px; display: none;">P</div>
+          <img src="/images/logo.png" alt="PCTVS Logo" class="w-24 h-24 object-contain" />
         </div>
         <h1 class="text-4xl font-bold mb-4">Welcome to PCTVS</h1>
         <p class="text-lg text-green-100 max-w-md mb-6">Securely access your personalized dashboard and manage your account with ease.</p>
@@ -260,7 +234,6 @@
                 required 
                 class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-white/80 shadow-sm text-sm focus:outline-none input-focus transition-all duration-200 placeholder:text-gray-400" 
                 placeholder="you@example.com"
-                value="{{ old('email') }}"
               />
               <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -320,7 +293,6 @@
               id="remember" 
               name="remember" 
               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              {{ old('remember') ? 'checked' : '' }}
             />
             <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me for 30 days</label>
           </div>
@@ -330,7 +302,6 @@
             type="submit" 
             class="relative w-full btn-primary text-white py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center"
             :disabled="loading"
-            :class="loading ? 'opacity-75 cursor-not-allowed' : ''"
           >
             <span x-show="!loading" class="flex items-center">
               Sign In
@@ -358,13 +329,7 @@
             href="{{ route('google.redirect') }}" 
             class="w-full flex items-center justify-center gap-3 border border-gray-200 py-3.5 rounded-xl font-medium text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow"
           >
-            <img 
-              src="https://www.svgrepo.com/show/355037/google.svg" 
-              alt="Google" 
-              class="w-5 h-5"
-              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-            />
-            <div class="logo-fallback" style="display: none;">G</div>
+            <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" class="w-5 h-5">
             Continue with Google
           </a>
         </div>
