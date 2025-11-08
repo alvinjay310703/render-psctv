@@ -162,7 +162,7 @@
       <div class="relative z-10 flex flex-col items-center text-center animate-fadeIn">
         <div class="w-32 h-32 rounded-2xl bg-white flex items-center justify-center shadow-2xl mb-8 relative animate-pulse-soft">
           <img 
-            src="{{ asset('images/logo.png') }}" 
+            src="{{ asset('/images/logo.png') }}" 
             alt="PCTVS Logo" 
             class="w-24 h-24 object-contain"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"

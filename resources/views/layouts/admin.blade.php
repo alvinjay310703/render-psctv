@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCTVS Admin - @yield('title')</title>
     <meta name="pusher-key" content="{{ config('broadcasting.connections.pusher.key') }}">
-    <meta name="pusher-cluster" content="{{ config('broadcasting.connections.pusher.options.cluster') }}">
-    <meta name="user-id" content="{{ Auth::id() }}">
+<meta name="pusher-cluster" content="{{ config('broadcasting.connections.pusher.options.cluster') }}">
+<meta name="user-id" content="{{ Auth::id() }}">
 
-    <!-- Favicons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url('apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url('favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url('favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ url('site.webmanifest') }}">
-    <link rel="icon" href="{{ url('favicon.ico') }}" type="image/x-icon">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+<link rel="manifest" href="{{ asset('site.webmanifest') }}">
+<link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 
     <!-- Alpine.js & SweetAlert -->
     <script src="//unpkg.com/alpinejs" defer></script>
@@ -31,39 +31,6 @@
         'resources/js/app.js',
         'resources/js/admin.js'
     ])
-
-    <style>
-        /* Additional styles for smooth transitions */
-        .sidebar-transition {
-            transition: all 0.3s ease-in-out;
-        }
-        
-        .content-transition {
-            transition: all 0.3s ease-in-out;
-        }
-        
-        .fade-enter {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        
-        .fade-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        
-        .dropdown-enter {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        
-        .dropdown-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.2s, transform 0.2s;
-        }
-    </style>
 </head>
 
 <body class="bg-gray-100 flex">
@@ -71,7 +38,7 @@
     @include('layouts.partials.sidebar')
 
     <!-- Main Content -->
-    <div id="mainContent" class="flex-1 pt-24 px-6 content-expanded content-transition">
+    <div id="mainContent" class="flex-1 pt-24 px-6 content-expanded transition-all duration-300">
 
         <!-- Header -->
         @include('layouts.partials.header')
@@ -175,116 +142,71 @@
             @yield('content')
         </main>
     </div>
+<!-- Scripts -->
+<script>
+    // ✅ Sidebar Toggle
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
 
-    <!-- Scripts -->
-    <script>
-        // ✅ Sidebar Toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('content-expanded');
 
-            if (!sidebar || !mainContent) return;
+        // Smooth transition effect
+        sidebar.classList.add('transition-all', 'duration-300', 'ease-in-out');
+        mainContent.classList.add('transition-all', 'duration-300', 'ease-in-out');
+    }
 
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('content-expanded');
+    // ✅ Toggle Submenu with Smooth Transition
+    window.toggleSubmenu = function(id) {
+        const menu = document.getElementById(id);
+        if (!menu) return;
 
-            // Add smooth transition classes
-            sidebar.classList.add('sidebar-transition');
-            mainContent.classList.add('content-transition');
+        // Add smooth transition classes
+        menu.classList.add('transition-all', 'duration-300', 'ease-in-out');
 
-            // Store sidebar state in localStorage
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        // Toggle visibility with smooth animation
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            // Force reflow to ensure transition works
+            menu.offsetHeight;
+            menu.classList.add('opacity-100', 'max-h-96');
+        } else {
+            menu.classList.remove('opacity-100', 'max-h-96');
+            menu.classList.add('opacity-0', 'max-h-0');
+            // Hide after transition
+            setTimeout(() => {
+                menu.classList.add('hidden');
+            }, 300);
         }
+    };
 
-        // ✅ Initialize sidebar state from localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    // ✅ User Dropdown Menu
+    function toggleUserMenu(event) {
+        if (event) event.stopPropagation();
+        const menu = document.getElementById('userMenu');
+        if (!menu) return;
 
-            if (sidebar && mainContent && isCollapsed) {
-                sidebar.classList.add('collapsed');
-                mainContent.classList.add('content-expanded');
-            }
-        });
+        menu.classList.toggle('opacity-100');
+        menu.classList.toggle('opacity-0');
+        menu.classList.toggle('translate-y-0');
+        menu.classList.toggle('-translate-y-2');
+        menu.classList.toggle('pointer-events-none');
+        menu.classList.add('transition-all', 'duration-200', 'ease-out');
+    }
 
-        // ✅ Toggle Submenu with Smooth Transition
-        window.toggleSubmenu = function(id) {
-            const menu = document.getElementById(id);
-            if (!menu) return;
-
-            // Add smooth transition classes
-            menu.classList.add('transition-all', 'duration-300', 'ease-in-out');
-
-            // Toggle visibility with smooth animation
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                // Force reflow to ensure transition works
-                menu.offsetHeight;
-                menu.classList.add('opacity-100', 'max-h-96');
-            } else {
-                menu.classList.remove('opacity-100', 'max-h-96');
-                menu.classList.add('opacity-0', 'max-h-0');
-                // Hide after transition
-                setTimeout(() => {
-                    menu.classList.add('hidden');
-                }, 300);
-            }
-        };
-
-        // ✅ User Dropdown Menu
-        function toggleUserMenu(event) {
-            if (event) event.stopPropagation();
-            const menu = document.getElementById('userMenu');
-            if (!menu) return;
-
-            const isVisible = menu.classList.contains('opacity-100');
-            
-            if (isVisible) {
-                menu.classList.remove('opacity-100', 'translate-y-0');
-                menu.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
-            } else {
-                menu.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
-                menu.classList.add('opacity-100', 'translate-y-0');
-            }
-            
-            menu.classList.add('transition-all', 'duration-200', 'ease-out');
+    // ✅ Close user dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+        const menu = document.getElementById('userMenu');
+        const button = document.getElementById('userMenuButton');
+        if (!menu) return;
+        if (button.contains(e.target)) return; // click is inside button
+        if (!menu.contains(e.target)) {
+            menu.classList.add('pointer-events-none', 'opacity-0', '-translate-y-2');
+            menu.classList.remove('opacity-100', 'translate-y-0');
         }
-
-        // ✅ Close user dropdown when clicking outside
-        document.addEventListener('click', function (e) {
-            const menu = document.getElementById('userMenu');
-            const button = document.getElementById('userMenuButton');
-            
-            if (!menu || !button) return;
-            
-            if (!button.contains(e.target) && !menu.contains(e.target)) {
-                menu.classList.remove('opacity-100', 'translate-y-0');
-                menu.classList.add('pointer-events-none', 'opacity-0', '-translate-y-2');
-            }
-        });
-
-        // ✅ Close dropdowns when pressing Escape key
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                const menu = document.getElementById('userMenu');
-                if (menu && !menu.classList.contains('opacity-0')) {
-                    menu.classList.remove('opacity-100', 'translate-y-0');
-                    menu.classList.add('pointer-events-none', 'opacity-0', '-translate-y-2');
-                }
-            }
-        });
-
-        // ✅ Page load animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add fade-in animation to main content
-            const mainContent = document.querySelector('main');
-            if (mainContent) {
-                mainContent.classList.add('fade-enter-active');
-            }
-        });
-    </script>
+    });
+</script>
 
     {{-- ✅ Render scripts pushed by child views --}}
     @stack('scripts')
