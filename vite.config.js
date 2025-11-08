@@ -3,9 +3,9 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    base: process.env.APP_URL || '/', // ✅ ensures HTTPS URLs in production
     plugins: [
         laravel({
-            // 👇 Include every entry point you actually use
             input: [
                 'resources/css/app.css',
                 'resources/css/admin.css',
@@ -15,17 +15,14 @@ export default defineConfig({
             ],
             refresh: true,
         }),
-        // 👇 Enables Tailwind features (jit, nesting, etc.)
         tailwindcss(),
     ],
     build: {
-        // 👇 Vite puts hashed files here (Laravel looks in config/vite.php)
         outDir: 'public/build',
         manifest: true,
         emptyOutDir: true,
     },
     server: {
-        // 👇 So `npm run dev` still works locally
         host: 'localhost',
         port: 5173,
         hmr: { host: 'localhost' },

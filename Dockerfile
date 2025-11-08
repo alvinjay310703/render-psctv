@@ -6,8 +6,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy all source files and build frontend
+# Copy all source files and build frontend with correct APP_URL
 COPY . .
+ENV APP_URL=https://render-psctv.onrender.com
 RUN npm run build
 
 # Stage 2 - Backend (Laravel + PHP + Composer)
@@ -23,26 +24,24 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy Laravel app files first
+# Copy Laravel app files
 COPY . .
 
-# Copy built frontend from Stage 1 AFTER app files
+# Copy built frontend from Stage 1
 COPY --from=frontend /app/public/build ./public/build
 
 # Fix permissions for Laravel
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/build
 RUN chmod -R 755 /var/www/storage /var/www/bootstrap/cache /var/www/public/build
 
-# Make entrypoint script executable inside the container
+# Make entrypoint script executable
 RUN chmod +x /var/www/docker-entrypoint.sh
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Clear Laravel caches
-RUN php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear
+# Clear caches
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
 
 # Use custom entrypoint to generate key, run migrations, and start built-in server
 CMD ["./docker-entrypoint.sh"]

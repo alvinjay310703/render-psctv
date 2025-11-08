@@ -7,7 +7,7 @@ php artisan key:generate --force
 # Run migrations
 php artisan migrate --force
 
-# Clear caches just in case
+# Clear caches
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
