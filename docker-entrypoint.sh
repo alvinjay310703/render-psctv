@@ -7,6 +7,10 @@ php artisan key:generate --force
 # Run migrations
 php artisan migrate --force
 
+# Clear caches just in case
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
 # Start Laravel built-in server on 0.0.0.0:10000
 php artisan serve --host=0.0.0.0 --port=10000
-

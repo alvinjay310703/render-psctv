@@ -23,11 +23,15 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy Laravel app files
+# Copy Laravel app files first
 COPY . .
 
-# Copy built frontend from Stage 1
+# Copy built frontend from Stage 1 AFTER app files
 COPY --from=frontend /app/public/build ./public/build
+
+# Fix permissions for Laravel
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/build
+RUN chmod -R 755 /var/www/storage /var/www/bootstrap/cache /var/www/public/build
 
 # Make entrypoint script executable inside the container
 RUN chmod +x /var/www/docker-entrypoint.sh
@@ -40,5 +44,5 @@ RUN php artisan config:clear && \
     php artisan route:clear && \
     php artisan view:clear
 
-# Start Laravel via custom entrypoint
+# Use custom entrypoint to generate key, run migrations, and start built-in server
 CMD ["./docker-entrypoint.sh"]
