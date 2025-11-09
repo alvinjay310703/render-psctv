@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ServiceRequest;
 use App\Models\Technician;
 use App\Models\User;
-use App\Models\Customer; // ✅ ADD THIS IMPORT
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -83,7 +83,7 @@ class ServiceRequestController extends Controller
             'service_type'  => 'required|string|max:100',
             'notes'         => 'nullable|string',
             'urgency'       => 'nullable|in:low,medium,high,emergency',
-            'customer_id'   => 'nullable|exists:customers,id', // ✅ ADD CUSTOMER ID VALIDATION
+            'customer_id'   => 'nullable|exists:customers,id',
         ]);
 
         // ✅ ATTACH CUSTOMER INFO IF CUSTOMER ID IS PROVIDED
@@ -104,7 +104,7 @@ class ServiceRequestController extends Controller
             }
         }
 
-        // Attach registered customer info if logged in (existing logic)
+        // Attach registered customer info if logged in
         if (Auth::check() && empty($validated['customer_id'])) {
             $customer = Auth::user()->customer ?? null;
             if ($customer) {
@@ -212,7 +212,7 @@ class ServiceRequestController extends Controller
             ->map(function ($tech) {
                 // Ensure coordinates are set, use defaults if not
                 if (!$tech->latitude || !$tech->longitude) {
-                    $tech->latitude = 12.8797; // Default Philippines coordinates
+                    $tech->latitude = 12.8797;
                     $tech->longitude = 121.7740;
                     
                     // Try to geocode if address exists
@@ -229,7 +229,7 @@ class ServiceRequestController extends Controller
         return view('service_requests.assign', compact('serviceRequest', 'technicians'));
     }
 
-    /** ⚙️ Assign technician to service request */
+    /** ⚙️ Assign technician to service request - FIXED VERSION */
     public function assignTechnician(Request $request, ServiceRequest $serviceRequest)
     {
         // ✅ Validate input
@@ -246,8 +246,13 @@ class ServiceRequestController extends Controller
             return back()->withErrors(['technician_id' => "Technician {$technician->full_name} is not active."]);
         }
 
+        // ✅ Check active jobs count using a subquery instead of scope to avoid PostgreSQL issue
         $maxActive = config('service.tech_max_active', 5);
-        if ($technician->active_jobs_count >= $maxActive) {
+        $activeJobsCount = ServiceRequest::where('technician_id', $technician->id)
+            ->whereIn('status', ['pending', 'assigned', 'in-progress'])
+            ->count();
+
+        if ($activeJobsCount >= $maxActive) {
             return back()->withErrors(['technician_id' => "Technician {$technician->full_name} already has maximum active jobs."])->withInput();
         }
 
