@@ -6,6 +6,7 @@
     <title>PSCTV - Panabo Cable and Fiber</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         :root {
@@ -69,7 +70,7 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
@@ -170,9 +171,9 @@
             left: 0;
             width: 100%;
             z-index: 1000;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0, 0, 0, 0.1);
             transition: var(--transition);
         }
 
@@ -255,7 +256,7 @@
             height: 100vh;
             display: flex;
             align-items: center;
-            background: linear-gradient(rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.8)), url('https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80') center/cover no-repeat;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.85)), url('https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80') center/cover no-repeat;
             position: relative;
             overflow: hidden;
             color: white;
@@ -482,10 +483,9 @@
             height: 400px;
         }
 
-        .map-container iframe {
+        #map {
             width: 100%;
             height: 100%;
-            border: none;
         }
 
         /* Contact Form Updates */
@@ -1136,7 +1136,7 @@
         <div class="container">
             <nav class="navbar">
                 <div class="logo">
-                    <img src="images/logo.png" alt="PSCTV Logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="PSCTV Logo">
                     <div class="logo-text">PSCTV</div>
                 </div>
                 <ul class="nav-links">
@@ -1210,7 +1210,7 @@
                 </div>
                 <div class="video-player">
                     <video controls poster="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80">
-                        <source src="public/video/videomp4" type="video/mp4">
+                        <source src="{{ asset('video/videomp4') }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                 </div>
@@ -1330,12 +1330,7 @@
                 <p>Find us at our main office in Panabo City</p>
             </div>
             <div class="map-container">
-                <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.123456789012!2d125.683333!3d7.308611!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32f96d3a6a5a5a5a%3A0x1234567890abcdef!2s519%20Quezon%20St%2C%20New%20Pandan%2C%20Panabo%20City%2C%20Davao%20Del%20Norte%2C%20Philippines!5e0!3m2!1sen!2sph!4v1234567890" 
-                    allowfullscreen="" 
-                    loading="lazy" 
-                    referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
+                <div id="map"></div>
             </div>
         </div>
     </section>
@@ -1383,7 +1378,7 @@
                         </div>
                         <div>
                             <h4>Call Us</h4>
-                            <p>+63 (084) 123-4567</p>
+                            <p>+639328476222</p>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -1392,7 +1387,7 @@
                         </div>
                         <div>
                             <h4>Email Us</h4>
-                            <p>info@pscablefiber.com</p>
+                            <p>psctvincacctg@gmail.com</p>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -1407,7 +1402,8 @@
                 </div>
                 <div class="contact-form">
                     <h3>Send Us a Message</h3>
-                    <form id="contactForm" action="https://formspree.io/f/your-form-id" method="POST">
+                    <form id="contactForm" action="{{ route('contact.store') }}" method="POST">
+                        @csrf
                         <div class="form-group">
                             <input type="text" class="form-control" name="name" placeholder="Your Name" required>
                         </div>
@@ -1445,10 +1441,10 @@
             <div class="footer-content">
                 <div class="footer-about">
                     <div class="footer-logo">
-                        <img src="public/images/logo.png" alt="PSCTV Logo">
+                        <img src="{{ asset('images/logo.png') }}" alt="PSCTV Logo">
                         <div class="footer-logo-text">PSCTV</div>
                     </div>
-                    <p>Panabo's premier cable and fiber internet provider, delivering reliable connectivity and entertainment to homes and businesses since 2010.</p>
+                    <p>Panabo's premier cable and fiber internet provider, delivering reliable connectivity and entertainment to homes and businesses since 1996.</p>
                     <div class="social-icons">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
@@ -1470,17 +1466,18 @@
                 <div class="footer-contact">
                     <h3>Contact Info</h3>
                     <p><i class="fas fa-map-marker-alt"></i> 519 Quezon St., New Pandan, Panabo City, Davao Del Norte</p>
-                    <p><i class="fas fa-phone"></i> +63 (084) 123-4567</p>
-                    <p><i class="fas fa-envelope"></i> info@pscablefiber.com</p>
+                    <p><i class="fas fa-phone"></i> +639328476222</p>
+                    <p><i class="fas fa-envelope"></i> psctvincacctg@gmail.com</p>
                     <p><i class="fas fa-clock"></i> Mon-Sat: 8:00 AM - 6:00 PM</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2023 PSCTV - Panabo Cable and Fiber. All Rights Reserved.</p>
+                <p>&copy; 2025 by Panabo Satellite Cable Television Inc. Est. 1996</p>
             </div>
         </div>
     </footer>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Mobile Menu Toggle
         const mobileMenu = document.querySelector('.mobile-menu');
@@ -1590,6 +1587,41 @@
             }
         });
 
+        // Leaflet Map
+        function initMap() {
+            // PSCTV Location Coordinates (Panabo City)
+            const psctvLocation = [7.3086, 125.6840];
+            
+            // Initialize map
+            const map = L.map('map').setView(psctvLocation, 15);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add custom marker
+            const customIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<i class="fas fa-map-marker-alt" style="color: #10b981; font-size: 30px;"></i>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            });
+            
+            // Add marker to map
+            L.marker(psctvLocation, {icon: customIcon}).addTo(map)
+                .bindPopup(`
+                    <div style="text-align: center;">
+                        <h4 style="margin: 0 0 10px 0; color: #10b981;">PSCTV Office</h4>
+                        <p style="margin: 0; font-size: 14px;">519 Quezon St., New Pandan<br>Panabo City, Davao Del Norte</p>
+                    </div>
+                `)
+                .openPopup();
+        }
+
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', initMap);
+
         // Contact Form Submission with reCAPTCHA
         const contactForm = document.getElementById('contactForm');
         const formStatus = document.getElementById('formStatus');
@@ -1612,15 +1644,31 @@
             submitBtn.disabled = true;
 
             try {
-                // Simulate form submission (replace with actual form submission)
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Get form data
+                const formData = new FormData(contactForm);
                 
-                formStatus.textContent = 'Thank you! Your message has been sent successfully. We will contact you soon.';
-                formStatus.className = 'form-status success';
-                contactForm.reset();
-                grecaptcha.reset();
+                // Send to Laravel backend
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    formStatus.textContent = 'Thank you! Your message has been sent successfully. We will contact you soon.';
+                    formStatus.className = 'form-status success';
+                    contactForm.reset();
+                    grecaptcha.reset();
+                } else {
+                    formStatus.textContent = 'Sorry, there was an error sending your message. Please try again.';
+                    formStatus.className = 'form-status error';
+                }
             } catch (error) {
-                formStatus.textContent = 'Sorry, there was an error sending your message. Please try again.';
+                formStatus.textContent = 'Network error. Please check your connection and try again.';
                 formStatus.className = 'form-status error';
             } finally {
                 submitBtn.textContent = originalText;
