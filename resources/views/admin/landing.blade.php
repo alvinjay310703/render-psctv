@@ -1402,7 +1402,7 @@
                 </div>
                 <div class="contact-form">
                     <h3>Send Us a Message</h3>
-                    <form id="contactForm" action="{{ route('contact.store') }}" method="POST">
+                   <form id="contactForm" action="/contact" method="POST">
                         @csrf
                         <div class="form-group">
                             <input type="text" class="form-control" name="name" placeholder="Your Name" required>
