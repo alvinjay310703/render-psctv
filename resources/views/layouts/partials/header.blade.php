@@ -1,11 +1,11 @@
 <header id="mainHeader" 
         class="fixed top-0 left-0 right-0 z-40 flex items-center bg-white shadow-lg px-4 py-3 border-b border-gray-100 transition-all duration-300 backdrop-blur-sm bg-white/95 md:left-64 md:px-6 md:py-4"
-        x-data="headerData()">
+        x-data="{ mobileMenuOpen: false, searchOpen: false }">
 
     <!-- Mobile Menu & Sidebar Toggle -->
     <div class="flex items-center space-x-3">
         <!-- Mobile Menu Toggle -->
-        <button @click="toggleMobileMenu()"
+        <button @click="mobileMenuOpen = !mobileMenuOpen"
             class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-600 transition-all duration-200 shadow-lg hover:shadow-xl md:hidden">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -43,7 +43,7 @@
     <div class="ml-auto flex items-center space-x-3 md:space-x-6">
 
         <!-- 🔍 Mobile Search Toggle -->
-        <button @click="toggleSearch()" class="md:hidden flex items-center justify-center w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl transition-all">
+        <button @click="searchOpen = !searchOpen" class="md:hidden flex items-center justify-center w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
             </svg>
@@ -53,7 +53,52 @@
         <div x-show="searchOpen" x-transition
             class="absolute top-full left-0 right-0 mt-2 mx-4 md:relative md:top-0 md:mt-0 md:mx-0 md:block"
             :class="searchOpen ? 'block' : 'hidden'"
-            x-data="searchData()">
+            x-data="{
+                open: false,
+                query: '',
+                results: [],
+                activeIndex: 0,
+                loading: false,
+
+                async search() {
+                    if (this.query.length < 2) {
+                        this.results = [];
+                        this.open = false;
+                        this.loading = false;
+                        return;
+                    }
+
+                    this.loading = true;
+                    try {
+                        const res = await fetch(`/admin/search?q=${this.query}`);
+                        this.results = await res.json();
+                        this.open = true;
+                        this.activeIndex = 0;
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        this.results = [];
+                        this.open = false;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                navigate(direction) {
+                    if (!this.open || this.results.length === 0) return;
+                    const max = this.results.length - 1;
+                    if (direction === 'up') {
+                        this.activeIndex = this.activeIndex > 0 ? this.activeIndex - 1 : max;
+                    } else {
+                        this.activeIndex = this.activeIndex < max ? this.activeIndex + 1 : 0;
+                    }
+                },
+
+                selectActive() {
+                    if (this.results[this.activeIndex]) {
+                        window.location.href = this.results[this.activeIndex].url;
+                    }
+                }
+            }">
             <div class="relative">
                 <input
                     type="text"
@@ -63,7 +108,7 @@
                     @keydown.arrow-down.prevent="navigate('down')"
                     @keydown.arrow-up.prevent="navigate('up')"
                     @keydown.enter.prevent="selectActive()"
-                    @click.away="searchOpen = false"
+                    @click.away="open = false"
                     class="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none focus:border-blue-500 transition-all duration-300 shadow-sm"
                 />
 
@@ -123,8 +168,8 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-semibold {{ $notifications->count() > 0 ? '' : 'hidden' }}">
-                        {{ $notifications->count() }}
+                    <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-semibold">
+                        0
                     </span>
                 </button>
 
@@ -138,146 +183,8 @@
                     </div>
 
                     <ul id="notifList" class="max-h-64 overflow-y-auto">
-                        @forelse($notifications as $note)
-                            <li class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50 transition-colors">
-                                <p class="text-sm font-semibold text-gray-800">
-                                    📢 {{ $note->data['title'] ?? 'Notification' }}
-                                </p>
-                                <p class="text-xs text-gray-600 line-clamp-2">
-                                    {{ $note->data['message'] ?? 'No details provided.' }}
-                                </p>
-                                <span class="block text-[10px] text-gray-400 mt-1">{{ $note->created_at->diffForHumans() }}</span>
-                            </li>
-                        @empty
-                            <li class="px-4 py-3 text-sm text-gray-500 text-center">No new notifications</li>
-                        @endforelse
+                        <li class="px-4 py-3 text-sm text-gray-500 text-center">No new notifications</li>
                     </ul>
-                </div>
-            </div>
-
-            <!-- System Status -->
-            <div class="relative" x-data="systemStatus()" x-init="init()">
-                <button @click="open = !open"
-                    class="relative flex items-center justify-center w-10 h-10 bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-xl transition-all duration-200 shadow-sm"
-                    :class="{
-                        'bg-green-50 text-green-600': overallStatus === 'healthy',
-                        'bg-yellow-50 text-yellow-600': overallStatus === 'warning',
-                        'bg-red-50 text-red-600': overallStatus === 'unhealthy'
-                    }">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-
-                    <!-- Status indicator dot -->
-                    <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white"
-                          :class="{
-                              'bg-green-500': overallStatus === 'healthy',
-                              'bg-yellow-500': overallStatus === 'warning',
-                              'bg-red-500': overallStatus === 'unhealthy'
-                          }"></span>
-                </button>
-
-                <!-- Status Dropdown -->
-                <div x-show="open" @click.away="open = false" x-transition.opacity
-                    class="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden transition-all duration-200">
-
-                    <div class="p-4 border-b border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-semibold text-gray-900">System Status</h3>
-                            <span class="text-xs text-gray-500" x-text="lastUpdated"></span>
-                        </div>
-                        <div class="flex items-center mt-2">
-                            <span class="text-sm font-medium"
-                                  :class="{
-                                      'text-green-700': overallStatus === 'healthy',
-                                      'text-yellow-700': overallStatus === 'warning',
-                                      'text-red-700': overallStatus === 'unhealthy'
-                                  }"
-                                  x-text="overallStatusText"></span>
-                        </div>
-                    </div>
-
-                    <div class="p-4 space-y-3">
-                        <!-- Database Status -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2"
-                                     :class="{
-                                         'text-green-500': status.database?.status === 'healthy',
-                                         'text-red-500': status.database?.status === 'unhealthy'
-                                     }"
-                                     fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                                </svg>
-                                <span class="text-sm font-medium text-gray-700">Database</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 mr-2" x-text="status.database?.response_time ? status.database.response_time.toFixed(2) + 'ms' : ''"></span>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                      :class="{
-                                          'bg-green-100 text-green-800': status.database?.status === 'healthy',
-                                          'bg-red-100 text-red-800': status.database?.status === 'unhealthy'
-                                      }"
-                                      x-text="status.database?.status || 'checking'"></span>
-                            </div>
-                        </div>
-
-                        <!-- Cache Status -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2"
-                                     :class="{
-                                         'text-green-500': status.cache?.status === 'healthy',
-                                         'text-red-500': status.cache?.status === 'unhealthy'
-                                     }"
-                                     fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-sm font-medium text-gray-700">Cache</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 mr-2" x-text="status.cache?.response_time ? status.cache.response_time.toFixed(2) + 'ms' : ''"></span>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                      :class="{
-                                          'bg-green-100 text-green-800': status.cache?.status === 'healthy',
-                                          'bg-red-100 text-red-800': status.cache?.status === 'unhealthy'
-                                      }"
-                                      x-text="status.cache?.status || 'checking'"></span>
-                            </div>
-                        </div>
-
-                        <!-- Queue Status -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2"
-                                     :class="{
-                                         'text-green-500': status.queue?.status === 'healthy',
-                                         'text-red-500': status.queue?.status === 'unhealthy'
-                                     }"
-                                     fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span class="text-sm font-medium text-gray-700">Queue</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="text-xs text-gray-500 mr-2" x-text="status.queue?.response_time ? status.queue.response_time.toFixed(2) + 'ms' : ''"></span>
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                      :class="{
-                                          'bg-green-100 text-green-800': status.queue?.status === 'healthy',
-                                          'bg-red-100 text-red-800': status.queue?.status === 'unhealthy'
-                                      }"
-                                      x-text="status.queue?.status || 'checking'"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
-                        <button @click="checkStatus()"
-                            class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
-                            :disabled="loading"
-                            x-text="loading ? 'Checking...' : 'Refresh Status'">
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -319,7 +226,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                             </svg>
                             Logout
-                        </button>
+                    </button>
                     </form>
                 </div>
             </div>
@@ -329,7 +236,7 @@
     <!-- Mobile Menu Overlay -->
     <div x-show="mobileMenuOpen" x-transition
         class="fixed inset-0 z-50 md:hidden bg-black bg-opacity-50"
-        @click="toggleMobileMenu()">
+        @click="mobileMenuOpen = false">
     </div>
 
     <!-- Mobile Menu Panel -->
@@ -340,7 +247,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 class="text-lg font-bold text-gray-900">Menu</h2>
-            <button @click="toggleMobileMenu()"
+            <button @click="mobileMenuOpen = false"
                     class="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors duration-200">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -353,74 +260,56 @@
             <!-- Dashboard -->
             <a href="{{ route('dashboard') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
-                </svg>
+                <x-heroicon-o-home class="h-5 w-5 mr-3"/>
                 Dashboard
             </a>
 
             <!-- Customers -->
             <a href="{{ route('customers.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
+                <x-heroicon-o-users class="h-5 w-5 mr-3"/>
                 Customers
             </a>
 
             <!-- Technicians -->
             <a href="{{ route('technicians.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <x-heroicon-o-user-group class="h-5 w-5 mr-3"/>
                 Technicians
             </a>
 
             <!-- Service Requests -->
             <a href="{{ route('service_requests.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <x-heroicon-o-wrench-screwdriver class="h-5 w-5 mr-3"/>
                 Service Requests
             </a>
 
             <!-- Billing -->
             <a href="{{ route('billing.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                <x-heroicon-o-credit-card class="h-5 w-5 mr-3"/>
                 Billing
             </a>
 
             <!-- Reports -->
             <a href="{{ route('reports.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+                <x-heroicon-o-chart-bar-square class="h-5 w-5 mr-3"/>
                 Reports
             </a>
 
             <!-- Announcements -->
             <a href="{{ route('announcements.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                </svg>
+                <x-heroicon-o-speaker-wave class="h-5 w-5 mr-3"/>
                 Announcements
             </a>
 
             <!-- Packages -->
             <a href="{{ route('packages.index') }}"
                class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
+                <x-heroicon-o-gift class="h-5 w-5 mr-3"/>
                 Packages
             </a>
         </nav>
@@ -448,3 +337,36 @@
         </div>
     </div>
 </header>
+
+<script>
+// Sidebar toggle function
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const isHidden = sidebar.classList.contains('-translate-x-full');
+    
+    if (window.innerWidth < 768) {
+        // Mobile behavior
+        if (isHidden) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// Close sidebar on mobile when clicking a link
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth < 768) {
+        document.querySelectorAll('#sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                toggleSidebar();
+            });
+        });
+    }
+});
+</script>

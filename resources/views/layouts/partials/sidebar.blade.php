@@ -1,6 +1,5 @@
 <aside id="sidebar"
-    class="bg-gray-900 text-gray-200 h-screen w-64 p-5 fixed top-0 left-0 transition-all duration-300 ease-in-out overflow-y-auto shadow-lg z-50
-           md:translate-x-0 -translate-x-full md:static md:z-auto">
+    class="bg-gray-900 text-gray-200 h-screen w-64 p-5 fixed top-0 left-0 transition-all duration-300 ease-in-out overflow-y-auto shadow-lg z-50 md:translate-x-0 -translate-x-full">
 
     <!-- Logo & Close Button for Mobile -->
     <div class="flex items-center justify-between mb-6 border-b border-gray-700 pb-3">
