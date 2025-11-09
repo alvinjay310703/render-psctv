@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Paths
     |--------------------------------------------------------------------------
-    | Apply CORS to these routes only. Include mobile endpoints.
+    | Apply CORS to API endpoints only.
     */
     'paths' => ['api/*', 'sanctum/csrf-cookie', 'mobile/*'],
 
@@ -21,31 +21,25 @@ return [
     |--------------------------------------------------------------------------
     | Allowed Origins
     |--------------------------------------------------------------------------
-    | Explicitly list all frontend origins you want to allow.
-    | ⚠️ Do NOT use '*' if supports_credentials is true.
+    | Only allow known frontend URLs in production for security.
     */
     'allowed_origins' => [
-        // Development
-        'http://localhost:19006',     
-        'http://127.0.0.1:19006',     
-        'http://localhost:8081',      
-        'http://127.0.0.1:8081',      
-        'http://localhost:5173',      
-        'http://10.0.2.2:19006',      
-        'http://10.0.22.243:19006',   
-        'exp://127.0.0.1:*',          
-
-        // Production
+        // Production domains
         'https://psctv.tech',
         'https://www.psctv.tech',
-        'https://your-render-app.onrender.com', // Add your Render URL here
+        'https://render-psctv.onrender.com',
+        
+        // Optional: add Expo Go local dev URLs for testing
+        'http://localhost:19006',
+        'http://127.0.0.1:19006',
+        'exp://127.0.0.1:*',
     ],
 
     /*
     |--------------------------------------------------------------------------
     | Allowed Origin Patterns
     |--------------------------------------------------------------------------
-    | For wildcard domains (optional)
+    | Use patterns if you need to match multiple subdomains
     */
     'allowed_origins_patterns' => [],
 
@@ -74,7 +68,7 @@ return [
     |--------------------------------------------------------------------------
     | Supports Credentials
     |--------------------------------------------------------------------------
-    | Must be true if using cookies, sessions, or Sanctum auth
+    | Must be true only if using cookies/sessions. False for token auth.
     */
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 ];

@@ -6,6 +6,7 @@
     <title>PSCTV - Panabo Cable and Fiber</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         :root {
             --primary: #10b981;
@@ -127,8 +128,9 @@
         }
 
         .btn-login:hover {
-            background-color: var(--primary);
-            color: white;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            transform: none;
         }
 
         .section-title {
@@ -309,6 +311,207 @@
             background: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80') center/cover no-repeat;
             border-radius: 20px 0 0 20px;
             box-shadow: var(--shadow-lg);
+        }
+
+        /* AI Chat Widget */
+        .ai-chat-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+            border: none;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-container {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-container.active {
+            display: flex;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+
+        .message.bot {
+            background: var(--gray-light);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .chat-input button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-input button:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Video Section */
+        .video-section {
+            background: var(--gray-light);
+            padding: 80px 0;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .video-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .video-player {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .video-player video {
+            width: 100%;
+            display: block;
+        }
+
+        /* Map Section */
+        .map-section {
+            padding: 80px 0;
+        }
+
+        .map-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            height: 400px;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Contact Form Updates */
+        .g-recaptcha {
+            margin: 20px 0;
+        }
+
+        .form-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .form-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .form-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
         }
 
         /* Services Section */
@@ -811,7 +1014,7 @@
                 display: none;
             }
             
-            .about-content, .contact-container {
+            .about-content, .contact-container, .video-container {
                 grid-template-columns: 1fr;
             }
             
@@ -821,6 +1024,11 @@
             
             .about-text.animate, .about-image.animate, .contact-info.animate, .contact-form.animate {
                 transform: translateY(0);
+            }
+
+            .chat-container {
+                width: 300px;
+                height: 450px;
             }
         }
 
@@ -886,6 +1094,16 @@
                 max-width: 250px;
                 margin-bottom: 15px;
             }
+
+            .ai-chat-widget {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .chat-container {
+                width: 280px;
+                height: 400px;
+            }
         }
 
         @media (max-width: 576px) {
@@ -903,6 +1121,11 @@
             
             .stat-number {
                 font-size: 2.8rem;
+            }
+
+            .chat-container {
+                width: 260px;
+                right: -20px;
             }
         }
     </style>
@@ -943,6 +1166,55 @@
                 </div>
             </div>
             <div class="hero-image"></div>
+        </div>
+    </section>
+
+    <!-- AI Chat Widget -->
+    <div class="ai-chat-widget">
+        <button class="chat-toggle">
+            <i class="fas fa-robot"></i>
+        </button>
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3>PSCTV Assistant</h3>
+                <button class="chat-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    Hello! I'm PSCTV Assistant. How can I help you today?
+                </div>
+                <div class="message bot">
+                    Please provide your email address so we can contact you with more information.
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type your email or message...">
+                <button id="sendMessage">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Section -->
+    <section class="video-section">
+        <div class="container">
+            <div class="video-container">
+                <div class="video-content">
+                    <h2>Experience PSCTV Quality</h2>
+                    <p>Watch our introduction video to learn more about our premium cable and fiber internet services in Panabo City.</p>
+                    <p>Discover why thousands of customers trust PSCTV for their connectivity needs with our state-of-the-art infrastructure and dedicated customer support.</p>
+                    <a href="#contact" class="btn">Get Started Today</a>
+                </div>
+                <div class="video-player">
+                    <video controls poster="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80">
+                        <source src="public/video/videomp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -1050,6 +1322,24 @@
         </div>
     </section>
 
+    <!-- Map Section -->
+    <section class="map-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Visit Our Location</h2>
+                <p>Find us at our main office in Panabo City</p>
+            </div>
+            <div class="map-container">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.123456789012!2d125.683333!3d7.308611!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32f96d3a6a5a5a5a%3A0x1234567890abcdef!2s519%20Quezon%20St%2C%20New%20Pandan%2C%20Panabo%20City%2C%20Davao%20Del%20Norte%2C%20Philippines!5e0!3m2!1sen!2sph!4v1234567890" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
     <!-- About Section -->
     <section id="about">
         <div class="container">
@@ -1084,7 +1374,7 @@
                         </div>
                         <div>
                             <h4>Our Location</h4>
-                            <p>Panabo City, Davao del Norte, Philippines</p>
+                            <p>519 Quezon St., New Pandan, Panabo City, Davao Del Norte</p>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -1117,19 +1407,31 @@
                 </div>
                 <div class="contact-form">
                     <h3>Send Us a Message</h3>
-                    <form id="contactForm">
+                    <form id="contactForm" action="https://formspree.io/f/your-form-id" method="POST">
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Your Name" required>
+                            <input type="text" class="form-control" name="name" placeholder="Your Name" required>
                         </div>
                         <div class="form-group">
-                            <input type="email" class="form-control" placeholder="Your Email" required>
+                            <input type="email" class="form-control" name="email" placeholder="Your Email" required>
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Subject">
+                            <input type="tel" class="form-control" name="phone" placeholder="Your Phone Number">
                         </div>
                         <div class="form-group">
-                            <textarea class="form-control" placeholder="Your Message" required></textarea>
+                            <select class="form-control" name="service" required>
+                                <option value="">Select Service</option>
+                                <option value="internet">Internet</option>
+                                <option value="cable">Cable TV</option>
+                                <option value="phone">Digital Phone</option>
+                                <option value="bundle">Bundle Package</option>
+                                <option value="support">Technical Support</option>
+                            </select>
                         </div>
+                        <div class="form-group">
+                            <textarea class="form-control" name="message" placeholder="Your Message" required></textarea>
+                        </div>
+                        <div class="g-recaptcha" data-sitekey="6LcVAAcsAAAAACrCk-6mwFUuYHTP7WQen0TrPL1Y"></div>
+                        <div class="form-status" id="formStatus"></div>
                         <button type="submit" class="btn">Send Message</button>
                     </form>
                 </div>
@@ -1143,7 +1445,7 @@
             <div class="footer-content">
                 <div class="footer-about">
                     <div class="footer-logo">
-                        <img src="images/logo.png" alt="PSCTV Logo">
+                        <img src="public/images/logo.png" alt="PSCTV Logo">
                         <div class="footer-logo-text">PSCTV</div>
                     </div>
                     <p>Panabo's premier cable and fiber internet provider, delivering reliable connectivity and entertainment to homes and businesses since 2010.</p>
@@ -1167,7 +1469,7 @@
                 </div>
                 <div class="footer-contact">
                     <h3>Contact Info</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> Panabo City, Davao del Norte</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 519 Quezon St., New Pandan, Panabo City, Davao Del Norte</p>
                     <p><i class="fas fa-phone"></i> +63 (084) 123-4567</p>
                     <p><i class="fas fa-envelope"></i> info@pscablefiber.com</p>
                     <p><i class="fas fa-clock"></i> Mon-Sat: 8:00 AM - 6:00 PM</p>
@@ -1240,12 +1542,90 @@
         window.addEventListener('scroll', animateOnScroll);
         window.addEventListener('load', animateOnScroll);
 
-        // Form Submission
+        // AI Chat Functionality
+        const chatToggle = document.querySelector('.chat-toggle');
+        const chatContainer = document.querySelector('.chat-container');
+        const chatClose = document.querySelector('.chat-close');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendMessage = document.getElementById('sendMessage');
+
+        chatToggle.addEventListener('click', () => {
+            chatContainer.classList.toggle('active');
+        });
+
+        chatClose.addEventListener('click', () => {
+            chatContainer.classList.remove('active');
+        });
+
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleUserMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            chatInput.value = '';
+
+            // Simulate AI response
+            setTimeout(() => {
+                if (message.includes('@') && message.includes('.')) {
+                    addMessage("Thank you! We've received your email and will contact you soon. Is there anything specific you'd like to know about our services?");
+                } else {
+                    addMessage("I'd love to help you! Could you please provide your email address so we can follow up with more information about our services?");
+                }
+            }, 1000);
+        }
+
+        sendMessage.addEventListener('click', handleUserMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserMessage();
+            }
+        });
+
+        // Contact Form Submission with reCAPTCHA
         const contactForm = document.getElementById('contactForm');
-        contactForm.addEventListener('submit', (e) => {
+        const formStatus = document.getElementById('formStatus');
+
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            alert('Thank you for your message! We will get back to you soon.');
-            contactForm.reset();
+            
+            // Check if reCAPTCHA is filled
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (!recaptchaResponse) {
+                formStatus.textContent = 'Please complete the reCAPTCHA verification.';
+                formStatus.className = 'form-status error';
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+
+            try {
+                // Simulate form submission (replace with actual form submission)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                formStatus.textContent = 'Thank you! Your message has been sent successfully. We will contact you soon.';
+                formStatus.className = 'form-status success';
+                contactForm.reset();
+                grecaptcha.reset();
+            } catch (error) {
+                formStatus.textContent = 'Sorry, there was an error sending your message. Please try again.';
+                formStatus.className = 'form-status error';
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
         });
     </script>
 </body>
