@@ -45,20 +45,26 @@ class DashboardController extends Controller
     private function getDashboardData()
     {
         // 🔹 Get ALL counts in a single raw query (massive performance boost)
-        $counts = DB::select("
-            SELECT 
-                (SELECT COUNT(*) FROM customers) as total_customers,
-                (SELECT COUNT(*) FROM technicians WHERE status = 'active') as active_technicians,
-                (SELECT COUNT(*) FROM service_requests) as total_service_requests,
-                (SELECT COUNT(*) FROM subscriptions WHERE status = 'active') as active_subscriptions,
-                (SELECT COUNT(*) FROM invoices WHERE status != 'paid') as pending_invoices,
-                (SELECT COUNT(*) FROM service_requests WHERE status = 'completed') as completed_requests,
-                (SELECT COUNT(*) FROM technicians) as total_technicians,
-                (SELECT COUNT(*) FROM subscriptions) as total_subscriptions,
-                (SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, assigned_at)) FROM service_requests WHERE assigned_at IS NOT NULL) as avg_response_time,
-                (SELECT AVG(rating) FROM service_requests WHERE rating IS NOT NULL) * 20 as customer_satisfaction,
-                (SELECT SUM(amount_paid) FROM payments WHERE status = 'paid' AND YEAR(payment_date) = YEAR(NOW()) AND MONTH(payment_date) = MONTH(NOW())) as revenue_this_month
-        ")[0];
+       $counts = DB::selectOne("
+    SELECT 
+        (SELECT COUNT(*) FROM customers) as total_customers,
+        (SELECT COUNT(*) FROM technicians WHERE status = 'active') as active_technicians,
+        (SELECT COUNT(*) FROM service_requests) as total_service_requests,
+        (SELECT COUNT(*) FROM subscriptions WHERE status = 'active') as active_subscriptions,
+        (SELECT COUNT(*) FROM invoices WHERE status != 'paid') as pending_invoices,
+        (SELECT COUNT(*) FROM service_requests WHERE status = 'completed') as completed_requests,
+        (SELECT COUNT(*) FROM technicians) as total_technicians,
+        (SELECT COUNT(*) FROM subscriptions) as total_subscriptions,
+        (SELECT AVG(EXTRACT(EPOCH FROM (assigned_at - created_at)) / 3600) 
+         FROM service_requests WHERE assigned_at IS NOT NULL) as avg_response_time,
+        (SELECT AVG(rating) * 20 FROM service_requests WHERE rating IS NOT NULL) as customer_satisfaction,
+        (SELECT SUM(amount_paid)
+         FROM payments
+         WHERE status = 'paid'
+         AND EXTRACT(YEAR FROM payment_date) = EXTRACT(YEAR FROM NOW())
+         AND EXTRACT(MONTH FROM payment_date) = EXTRACT(MONTH FROM NOW())) as revenue_this_month
+");
+
 
         // 🔹 Get monthly growth in separate optimized query
         $monthlyGrowth = $this->getMonthlyGrowth();
