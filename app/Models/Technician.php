@@ -37,6 +37,9 @@ class Technician extends Model
         'longitude' => 'decimal:7',
     ];
 
+    // Add this to make active_jobs_count accessible
+    protected $appends = ['active_jobs_count'];
+
     /** Relationship: technician has many service requests */
     public function serviceRequests()
     {
@@ -61,12 +64,28 @@ class Technician extends Model
         return $this->serviceRequests()->whereIn('status', ['pending', 'assigned', 'in-progress'])->count();
     }
 
-    /** Available technicians (less than max active jobs) */
+    /** FIXED: Available technicians (less than max active jobs) - PostgreSQL compatible */
     public function scopeAvailable($query, $maxJobs = 5)
     {
-        return $query->withCount(['serviceRequests as active_jobs' => function ($q) {
+        return $query->whereHas('serviceRequests', function ($q) use ($maxJobs) {
             $q->whereIn('status', ['pending', 'assigned', 'in-progress']);
-        }])->having('active_jobs', '<', $maxJobs);
+        }, '<', $maxJobs)
+        ->orWhereDoesntHave('serviceRequests', function ($q) {
+            $q->whereIn('status', ['pending', 'assigned', 'in-progress']);
+        })
+        ->where('status', 'active');
+    }
+
+    /** Alternative method using subquery (PostgreSQL compatible) */
+    public function scopeAvailableAlt($query, $maxJobs = 5)
+    {
+        return $query->where('status', 'active')
+            ->whereRaw("(
+                SELECT COUNT(*) 
+                FROM service_requests 
+                WHERE technicians.id = service_requests.technician_id 
+                AND status IN ('pending', 'assigned', 'in-progress')
+            ) < ?", [$maxJobs]);
     }
 
     /** Active technicians */
@@ -75,16 +94,27 @@ class Technician extends Model
         return $query->where('status', 'active');
     }
 
-    /** Active job counter */
+    /** Active job counter - Fixed for PostgreSQL */
     public function getActiveJobsCountAttribute()
     {
-        return $this->serviceRequests()->whereIn('status', ['assigned', 'in-progress'])->count();
+        if (!array_key_exists('active_jobs_count', $this->relations)) {
+            $this->relations['active_jobs_count'] = $this->serviceRequests()
+                ->whereIn('status', ['pending', 'assigned', 'in-progress'])
+                ->count();
+        }
+        return $this->relations['active_jobs_count'];
     }
 
     /** Helper: is technician active */
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /** Check if technician is available for new jobs */
+    public function isAvailable($maxJobs = 5): bool
+    {
+        return $this->isActive() && $this->active_jobs_count < $maxJobs;
     }
 
     /** Get coordinates from address using multiple fallback methods */
