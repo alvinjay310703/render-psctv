@@ -56,7 +56,7 @@ use App\Http\Controllers\ContactController;
 Route::get('/', function () {
     return view('admin.landing');
 })->name('landing');
-
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 // Authentication
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -275,5 +275,5 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::post('/notifications/mark-all-read', [StaffNotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
     Route::post('/notifications/{id}/mark-read', [StaffNotificationController::class, 'markAsRead'])->name('notifications.markRead');
 
-    Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+    
 });
