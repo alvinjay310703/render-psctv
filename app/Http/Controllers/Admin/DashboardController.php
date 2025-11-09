@@ -137,13 +137,14 @@ class DashboardController extends Controller
     private function getChartData()
     {
         // Monthly Revenue
-        $monthlyRevenueData = DB::table('payments')
-            ->selectRaw('MONTH(payment_date) as month, SUM(amount_paid) as total')
-            ->where('status', 'paid')
-            ->whereYear('payment_date', now()->year)
-            ->groupByRaw('MONTH(payment_date)')
-            ->pluck('total', 'month')
-            ->toArray();
+       $monthlyRevenueData = DB::table('payments')
+    ->selectRaw('EXTRACT(MONTH FROM payment_date) AS month, SUM(amount_paid) AS total')
+    ->where('status', 'paid')
+    ->whereRaw('EXTRACT(YEAR FROM payment_date) = ?', [now()->year])
+    ->groupByRaw('EXTRACT(MONTH FROM payment_date)')
+    ->pluck('total', 'month')
+    ->toArray();
+
 
         $months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         $formattedRevenue = [];
